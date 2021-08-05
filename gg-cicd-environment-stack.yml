@@ -17,20 +17,20 @@ Parameters:
 
 Mappings:
   # If Greengrass becomes available in other regions, add the x86 AMI Id for the
-  # image description:  "Ubuntu Server 16.04 LTS (HVM), SSD Volume Type"
+  # image description:  "Ubuntu Server 20.04 LTS (HVM), SSD Volume Type"
   RegionMap:
     us-east-1:
-      "HVM": "ami-0565af6e282977273"
+      "HVM": "ami-09e67e426f25ce0d7"
     us-west-2:
-      "HVM": "ami-08692d171e3cf02d6"
+      "HVM": "ami-03d5c68bab01f3496"
     eu-west-1:
-      "HVM": "ami-08660f1c6fb6b01e7"
+      "HVM": "ami-0d382e80be7ffdae5"
     eu-central-1:
-      "HVM": "ami-05af84768964d3dc0"
+      "HVM": "ami-05f7491af5eef733a"
     ap-northeast-1:
-      "HVM": "ami-06c43a7df16e8213c"
+      "HVM": "ami-0df99b3a8349462c6"
     ap-southeast-2:
-      "HVM": "ami-0789a5fb42dcccc10"
+      "HVM": "ami-0d058fe428540cd89"
 
 Resources:
   GreengrassGroup:
@@ -119,14 +119,13 @@ Resources:
           export DEBIAN_FRONTEND=noninteractive
           apt update -y
           apt upgrade -y
-          apt install python-minimal python-pip -y
+          apt install python3-minimal python3-pip -y
           pip install greengrasssdk
           adduser --system ggc_user
           groupadd --system ggc_group
 
-          wget https://d1onfpft10uf5o.cloudfront.net/greengrass-core/downloads/1.10.0/greengrass-linux-x86-64-1.10.0.tar.gz
-
-          tar xzvf greengrass-linux-x86-64-1.10.0.tar.gz -C /
+          wget https://d1onfpft10uf5o.cloudfront.net/greengrass-core/downloads/1.11.3/greengrass-linux-x86-64-1.11.3.tar.gz
+          tar xzvf greengrass-linux-x86-64-1.11.3.tar.gz -C /
           echo -n "${IoTThing.certificatePem}" > /greengrass/certs/${IoTThing.certificateId}.pem
           echo -n "${IoTThing.privateKey}" > /greengrass/certs/${IoTThing.certificateId}.key
           cd /greengrass/config

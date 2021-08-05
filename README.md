@@ -1,3 +1,10 @@
+# gg-cicd
+
+Clone the repo with submodules:
+
+```bash
+git clone --recurse-submodules
+```
 
 Follow <https://aws.amazon.com/blogs/iot/implementing-a-ci-cd-pipeline-for-aws-iot-greengrass-projects/>
 
@@ -43,19 +50,27 @@ git push -u origin master
 
 Check the deployment is successful and go to "Interacting with the deployed Lambda function" in the blog post.
 
-## Maintenance
+Deploy the SageMaker CF <https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=ggmlworkshop&templateURL=https://s3-us-west-2.amazonaws.com/iotworkshop/lab43-sagemaker.json> from <https://iot.awsworkshops.com/aws-greengrass-ml/lab43-mlsagemakerworkshop/>
 
 ```bash
-git clone --recurse-submodules
+aws cloudformation deploy --template-file lab43-sagemaker.json --stack-name ggmlworkshop --capabilities CAPABILITY_IAM
 ```
 
-Add CodeCommit as the origin to the module:
+## Resources
+
+- <https://aws.amazon.com/blogs/iot/implementing-a-ci-cd-pipeline-for-aws-iot-greengrass-projects/>
+
+- <https://iot.awsworkshops.com/aws-greengrass-ml/lab43-mlsagemakerworkshop/>
+
+## Maintenance
+
+Add CodeCommit as an origin to the module:
 
 ```bash
 git remote add codecommit <code-commit-repo>
 ```
 
-Push to GutHub the submodule:
+Push the changes in the submodule to CodeCommit and to the GitHub:
 
 ```bash
 git push codecommit main:master
@@ -67,3 +82,5 @@ git submodule update --remote
 git submodule update --remote --rebase
 git submodule update --init --recursive
 ```
+
+Unstuck deletion of custom resources <https://aws.amazon.com/premiumsupport/knowledge-center/cloudformation-lambda-resource-delete/>
