@@ -1,0 +1,3 @@
+[submodule "aws-gg-ml-cicd-project"]
+	path = aws-gg-ml-cicd-project
+	url = https://github.com/o7g8/aws-gg-ml-cicd-project.git

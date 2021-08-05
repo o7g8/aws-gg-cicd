@@ -1,0 +1,206 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Creates a CodeCommit repository and associated CodePipeline
+
+Parameters:
+  BuildComputeType:
+    Type: String
+    Description: Instance Type to use for build
+    Default: BUILD_GENERAL1_SMALL
+
+  BuildImage:
+    Type: String
+    Description: Docker image to use for build
+    Default: "aws/codebuild/python:3.7.1"
+
+Resources:
+  ##########
+  # ROLES
+  ##########
+
+  BuildAndDeployPipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [codepipeline.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - 's3:*'
+                  - 'iam:PassRole'
+                  - 'iam:AssumeRole'
+                  - 'sns:Publish'
+                  - 'lambda:InvokeFunction'
+                  - 'lambda:ListFunctions'
+                  - 'codecommit:*'
+                  - 'codebuild:*'
+                Effect: Allow
+                Resource: '*'
+
+  # TODO: These permissions are very broad. Restrict them to the actions that your build steps actually require.
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - "codebuild.amazonaws.com"
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: code-build-service-role
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "*"
+                Resource: "*"
+
+  RoleEventsStartPipeline:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: cwe-pipeline-execution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:*"
+
+
+  CodeRepository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: greengrass-cicd-project
+
+
+  ######
+  # S3
+  #######
+  PipelineArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "artifacts-${AWS::AccountId}-${AWS::Region}"
+      AccessControl: "BucketOwnerFullControl"
+
+  CodeBuildAndDeploy:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${AWS::StackName}"
+      Artifacts:
+        Type: CODEPIPELINE
+      BadgeEnabled: False
+      Description: Build and Deploy the CFN
+      Environment:
+        ComputeType: !Ref BuildComputeType
+        Image: !Ref BuildImage
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: True
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: ARTIFACTS_BUCKET
+            Value: !Ref PipelineArtifactsBucket
+            Type: PLAINTEXT
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Source:
+        Type: CODEPIPELINE
+
+
+  BuildAndDeployPipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      ArtifactStore:
+        Location: !Ref PipelineArtifactsBucket
+        Type: S3
+      RestartExecutionOnUpdate: True
+      RoleArn: !GetAtt BuildAndDeployPipelineRole.Arn
+      Stages:
+        - Name: PullSource
+          Actions:
+            - Name: PullSource
+              OutputArtifacts:
+                - Name: "PullFromSourceBranch-master"
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeCommit
+                Version: 1
+              Configuration:
+                BranchName: master
+                RepositoryName: !GetAtt CodeRepository.Name
+                PollForSourceChanges: false
+        - Name: CodeBuildAndDeployStage
+          Actions:
+            - Name: BuildAndDeploy
+              InputArtifacts:
+                - Name: "PullFromSourceBranch-master"
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref CodeBuildAndDeploy
+
+  EventRepoChangeOnMaster:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - 'CodeCommit Repository State Change'
+        resources:
+          - !GetAtt CodeRepository.Arn
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - master
+      Targets:
+        - Arn:
+            !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${BuildAndDeployPipeline}"
+          RoleArn: !GetAtt RoleEventsStartPipeline.Arn
+          Id: !Sub "${AWS::StackName}-EventRepoChangeOnMaster"
+
+# OUTPUTS
+#############
+Outputs:
+  CodeRepoSSH:
+    Description: Code Repo Clone SSH
+    Value: !GetAtt CodeRepository.CloneUrlSsh
+
+  CodeRepoHTTP:
+    Description: Code Repo Clone HTTP
+    Value: !GetAtt CodeRepository.CloneUrlHttp
+
+  PipelineArtifactsBucket:
+    Description: Holds Artifacts Produced During Build
+    Value: !Ref PipelineArtifactsBucket
