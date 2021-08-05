@@ -1,0 +1,146 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Cloud formation template for SageMaker artifacts in the AWS IoT Workshop",
+    "Resources": {
+        "IotWorkshopSageMakerBucket": {
+            "Type": "AWS::S3::Bucket"
+        },
+        "IotWorkshopSageMakerExecRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "sagemaker.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+                ],
+                "Policies": [
+                    {
+                        "PolicyName": "IotWorkshopSageMakerInlinePolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:*",
+                                        "iam:GetRole"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "IotWorkshopSageMakerInstanceLifecycleConfig": {
+            "Type": "AWS::SageMaker::NotebookInstanceLifecycleConfig",
+            "Properties": {
+                "OnCreate": [
+                    {
+                        "Content": {
+                            "Fn::Base64": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "#!/bin/bash -v\n",
+                                        "date\n",
+                                        "echo LANG=en_US.utf-8 >> /etc/environment\n",
+                                        "echo LC_ALL=en_US.UTF-8 >> /etc/environment\n",
+                                        "REGION=",
+                                        {
+                                            "Ref": "AWS::Region"
+                                        },
+                                        "\n",
+                                        "S3_BUCKET=",
+                                        {
+                                            "Ref": "IotWorkshopSageMakerBucket"
+                                        },
+                                        "\n",
+                                        "mkdir -p /home/ec2-user/SageMaker/Greengrass-ML\n",
+                                        "cd /tmp/\n",
+                                        "wget https://s3-us-west-2.amazonaws.com/iotworkshop/greengrass-ml-sagemaker.tgz\n",
+                                        "tar zxvf greengrass-ml-sagemaker.tgz -C /home/ec2-user/SageMaker/Greengrass-ML/\n",
+                                        "\n",
+                                        "mv /home/ec2-user/SageMaker/Greengrass-ML/greengrass-ml_mxnet_cifar10_with_gluon_local.ipynb /tmp/\n",
+                                        "sed -e \"s/XXXS3BUCKETXXX/$S3_BUCKET/\" -e \"s/XXXREGIONXXX/$REGION/\" greengrass-ml_mxnet_cifar10_with_gluon_local.ipynb > /home/ec2-user/SageMaker/Greengrass-ML/greengrass-ml_mxnet_cifar10_with_gluon_local.ipynb\n",
+                                        "\n",
+                                        "\n",
+                                        "chown -R ec2-user:ec2-user /home/ec2-user/SageMaker/Greengrass-ML\n",
+                                        "\n",
+                                        "exit 0\n"
+                                    ]
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "IotWorkshopSageMakerInstance": {
+            "Type": "AWS::SageMaker::NotebookInstance",
+            "Properties": {
+                "InstanceType": "ml.m4.xlarge",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "IotWorkshopSageMakerExecRole",
+                        "Arn"
+                    ]
+                },
+                "LifecycleConfigName": {
+                    "Fn::GetAtt": [
+                        "IotWorkshopSageMakerInstanceLifecycleConfig",
+                        "NotebookInstanceLifecycleConfigName"
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "IoT workshop"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "SageMakerInstance": {
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "https://",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        ".console.aws.amazon.com/sagemaker/home?region=",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "#/notebook-instances/openNotebook/",
+                        {
+                            "Fn::GetAtt": [
+                                "IotWorkshopSageMakerInstance",
+                                "NotebookInstanceName"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        }
+    }
+}

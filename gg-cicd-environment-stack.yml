@@ -124,6 +124,11 @@ Resources:
           adduser --system ggc_user
           groupadd --system ggc_group
 
+          # provision ML stuff
+          mkdir -p /greengrass-ml/images/cifar10
+          chown ggc_user:ggc_group /greengrass-ml/images/cifar10
+          pip install numpy mxnet python-magic scikit-image
+
           wget https://d1onfpft10uf5o.cloudfront.net/greengrass-core/downloads/1.11.3/greengrass-linux-x86-64-1.11.3.tar.gz
           tar xzvf greengrass-linux-x86-64-1.11.3.tar.gz -C /
           echo -n "${IoTThing.certificatePem}" > /greengrass/certs/${IoTThing.certificateId}.pem

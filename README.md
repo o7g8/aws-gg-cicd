@@ -56,6 +56,15 @@ Deploy the SageMaker CF <https://console.aws.amazon.com/cloudformation/home?regi
 aws cloudformation deploy --template-file lab43-sagemaker.json --stack-name ggmlworkshop --capabilities CAPABILITY_IAM
 ```
 
+Train the model.
+
+For the ML Lambda choose Python3.8 runtime.
+For Lambda GG memory limit choose 760MB.
+
+## TODO
+
+In the Jupyter script rename `train_instance_type` to `instance_type` to comply with SageMaker v2.
+
 ## Resources
 
 - <https://aws.amazon.com/blogs/iot/implementing-a-ci-cd-pipeline-for-aws-iot-greengrass-projects/>
