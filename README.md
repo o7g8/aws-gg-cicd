@@ -12,7 +12,7 @@ Clone the repo with submodules:
 git clone --recurse-submodules
 ```
 
-Deploy the SageMaker CF from <https://iot.awsworkshops.com/aws-greengrass-ml/lab43-mlsagemakerworkshop/> [in Console](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=ggmlworkshop&templateURL=https://s3-us-west-2.amazonaws.com/iotworkshop/lab43-sagemaker.json)  or in CLI:
+Deploy the SageMaker CF from <https://iot.awsworkshops.com/aws-greengrass-ml/lab43-mlsagemakerworkshop/> in [AWS Console](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=ggmlworkshop&templateURL=https://s3-us-west-2.amazonaws.com/iotworkshop/lab43-sagemaker.json)  or in CLI:
 
 ```bash
 aws cloudformation deploy --template-file lab43-sagemaker.json --stack-name ggmlworkshop --capabilities CAPABILITY_IAM
@@ -24,19 +24,19 @@ Copy the training job ARN and paste it into `SageMakerJobArn` [./aws-gg-ml-cicd-
 
 Follow <https://aws.amazon.com/blogs/iot/implementing-a-ci-cd-pipeline-for-aws-iot-greengrass-projects/>
 
-* Deploy the `test` GG group in [console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://aws-iot-blog-assets.s3.amazonaws.com/cicd-pipeline-aws-iot-greengrass/gg-cicd-environment-stack.yml&stackName=gg-cicd-test-environment&param_CoreName=gg-cicd-test) or in CLI:
+* Deploy the `test` GG group in [AWS Console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://aws-iot-blog-assets.s3.amazonaws.com/cicd-pipeline-aws-iot-greengrass/gg-cicd-environment-stack.yml&stackName=gg-cicd-test-environment&param_CoreName=gg-cicd-test) or in CLI:
 
 ```bash
 aws cloudformation deploy --template-file gg-cicd-environment-stack.yml --stack-name gg-cicd-test-environment --capabilities CAPABILITY_IAM --parameter-overrides CoreName=gg-cicd-test myKeyPair=<your-key>
 ```
 
-* Deploy `prod` GG group in [Console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://aws-iot-blog-assets.s3.amazonaws.com/cicd-pipeline-aws-iot-greengrass/gg-cicd-environment-stack.yml&stackName=gg-cicd-prod-environment&param_CoreName=gg-cicd-prod) or in CLI:
+* Deploy `prod` GG group in [AWS Console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://aws-iot-blog-assets.s3.amazonaws.com/cicd-pipeline-aws-iot-greengrass/gg-cicd-environment-stack.yml&stackName=gg-cicd-prod-environment&param_CoreName=gg-cicd-prod) or in CLI:
 
 ```bash
 aws cloudformation deploy --template-file gg-cicd-environment-stack.yml --stack-name gg-cicd-prod-environment --capabilities CAPABILITY_IAM --parameter-overrides CoreName=gg-cicd-prod myKeyPair=<your-key>
 ```
 
-* Deploy the CI/CD pipeline in [console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://aws-iot-blog-assets.s3.amazonaws.com/cicd-pipeline-aws-iot-greengrass/gg-cicd-pipeline-stack.yml&stackName=gg-cicd-pipeline) or in CLI:
+* Deploy the CI/CD pipeline in [AWS Console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://aws-iot-blog-assets.s3.amazonaws.com/cicd-pipeline-aws-iot-greengrass/gg-cicd-pipeline-stack.yml&stackName=gg-cicd-pipeline) or in CLI:
 
 ```bash
 aws cloudformation deploy --template-file gg-cicd-pipeline-stack.yml --stack-name gg-cicd-pipeline --capabilities CAPABILITY_IAM --parameter-overrides CoreName=gg-cicd-prod 
