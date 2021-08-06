@@ -1,6 +1,10 @@
 # gg-cicd
 
-Demo of a CI/CD pipeline which deploys a "regular" Lambda and a ML inference Lambda to Greengrass into a `test` environment and if all tests pass there, then the functions are deployed to the `prod` environment.
+Demo of a CI/CD pipeline which deploys a "regular" Lambda which echoes messages and a ML inference Lambda which does image recognition to Greengrass into a `test` environment and if all tests pass there, then the functions are deployed to the `prod` environment.
+
+Here is the architecture diagram of the deployment:
+
+![Architecture](aws-gg-ml-cicd.png)
 
 Clone the repo with submodules:
 
@@ -75,7 +79,7 @@ Within 5 sec you should see a message below in the MQTT test client:
 }
 ```
 
-## TODO
+## TODO
 
 Upgrade to GG2.
 
@@ -87,9 +91,9 @@ Save the last SM training job in SSM param store and read it in the deployment.
 
 ## Resources
 
-- <https://aws.amazon.com/blogs/iot/implementing-a-ci-cd-pipeline-for-aws-iot-greengrass-projects/>
+* <https://aws.amazon.com/blogs/iot/implementing-a-ci-cd-pipeline-for-aws-iot-greengrass-projects/>
 
-- <https://iot.awsworkshops.com/aws-greengrass-ml/lab43-mlsagemakerworkshop/>
+* <https://iot.awsworkshops.com/aws-greengrass-ml/lab43-mlsagemakerworkshop/>
 
 ## Maintenance
 
