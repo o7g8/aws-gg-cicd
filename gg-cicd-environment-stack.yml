@@ -30,7 +30,7 @@ Mappings:
     ap-northeast-1:
       "HVM": "ami-0df99b3a8349462c6"
     ap-southeast-2:
-      "HVM": "ami-0d058fe428540cd89"
+      "HVM": "ami-0567f647e75c7bc05"
 
 Resources:
   GreengrassGroup:
